@@ -1,10 +1,12 @@
+import os
 from datetime import datetime, timedelta
 from typing import NamedTuple, Optional
 
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-SHEET_NAME = "Arthur's App (Responses)"
+# SHEET_NAME = "Arthur's App (Responses)"
+SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
 
 
 class BabyEvent(NamedTuple):
