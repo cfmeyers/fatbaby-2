@@ -1,9 +1,9 @@
+import json
 import os
 from datetime import datetime, timedelta
 from typing import NamedTuple, Optional
 
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
 # SHEET_NAME = "Arthur's App (Responses)"
 SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
@@ -26,6 +26,18 @@ def get_sheet():
     )
     client = gspread.authorize(creds)
     return client.open(SHEET_NAME).sheet1
+
+
+def get_sheet():
+    scope = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive",
+    ]
+    raw_creds = os.getenv("GOOGLE_CREDENTIALS")
+    credentials = json.loads(raw_creds)
+
+    gc = gspread.service_account_from_dict(credentials)
+    return gc.open("Arthur's App (Responses)").sheet1
 
 
 def parse_val_into_event(val: list[str]) -> BabyEvent:
