@@ -16,6 +16,28 @@ class BabyEvent(NamedTuple):
     people: list[str]
 
 
+def to_pretty_time(dt: datetime) -> str:
+    return dt.strftime("%-I:%M %p (%a)")
+
+
+class BabyUpdate(NamedTuple):
+    most_recent_feed: datetime
+    next_feed: datetime
+    most_recent_dirty_diaper: datetime
+
+    @property
+    def pretty_most_recent_feed(self) -> str:
+        return to_pretty_time(self.most_recent_feed)
+
+    @property
+    def pretty_next_feed(self) -> str:
+        return to_pretty_time(self.next_feed)
+
+    @property
+    def pretty_most_recent_dirty_diaper(self) -> str:
+        return to_pretty_time(self.most_recent_dirty_diaper)
+
+
 def get_sheet():
     scope = [
         "https://www.googleapis.com/auth/spreadsheets",
@@ -59,15 +81,37 @@ def get_baby_events_from_sheet(sheet) -> list[BabyEvent]:
     return [parse_val_into_event(v) for v in vals[1:]]
 
 
-def get_next_feeding_time_from_sheet(
+def get_most_recent_feeding_time_from_events(events: list[BabyEvent]) -> datetime:
+    most_recent = [e for e in events if e.formula_amount is not None][-1]
+    return most_recent.created_at
+
+
+def get_most_recent_dirty_diaper_from_events(events: list[BabyEvent]) -> datetime:
+    most_recent = [e for e in events if "Poop" in e.diaper_type][-1]
+    return most_recent.created_at
+
+
+def get_next_feeding_time_from_events(
     events: list[BabyEvent], delta: float = 3.0
 ) -> datetime:
-    most_recent = [e for e in events if e.formula_amount is not None][-1]
-    last_feeding_time = most_recent.created_at
+    last_feeding_time = get_most_recent_feeding_time_from_events(events)
     return last_feeding_time + timedelta(hours=delta)
 
 
 def get_next_feeding_time() -> datetime:
     sheet = get_sheet()
     baby_events = get_baby_events_from_sheet(sheet)
-    return get_next_feeding_time_from_sheet(baby_events, delta=3.0)
+    return get_next_feeding_time_from_events(baby_events, delta=3.0)
+
+
+def get_baby_update() -> BabyUpdate:
+    sheet = get_sheet()
+    events = get_baby_events_from_sheet(sheet)
+    most_recent_feed = get_most_recent_feeding_time_from_events(events)
+    next_feed = get_next_feeding_time_from_events(events, delta=3.0)
+    most_recent_dirty_diaper = get_most_recent_dirty_diaper_from_events(events)
+    return BabyUpdate(
+        most_recent_feed=most_recent_feed,
+        next_feed=next_feed,
+        most_recent_dirty_diaper=most_recent_dirty_diaper,
+    )
