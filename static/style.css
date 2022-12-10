@@ -1,0 +1,14 @@
+body {
+    font-size: 20px;
+    text-align: center;
+    background-color: rgb(249, 249, 249);
+}
+
+div.next-feeding {
+    color: rgb(153, 206, 228);
+    font-size: 40px;
+}
+
+div.make-bold {
+    font-weight: bold;
+}
