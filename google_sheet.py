@@ -1,3 +1,12 @@
+"""
+Use a Google Sheet as a read-only data source for keeping track of baby's most recent
+feeding, diaper, etc.
+
+Depends on 2 environment variables:
+    - GOOGLE_SHEET_NAME: the name of the Google Sheet
+    - GOOGLE_CREDENTIALS: json blob of your service workers google credentials, typically
+    found in google-credentials.json or client-credentials.json
+"""
 import json
 import os
 from datetime import datetime, timedelta
@@ -6,6 +15,7 @@ from typing import NamedTuple, Optional
 import gspread
 
 SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
+GOOGLE_CREDENTIALS = os.getenv("GOOGLE_CREDENTIALS")
 
 
 class BabyEvent(NamedTuple):
@@ -43,8 +53,7 @@ class BabyUpdate(NamedTuple):
 
 def get_sheet() -> gspread.worksheet.Worksheet:
     """Get the Google Sheet that holds the raw baby event data"""
-    raw_creds = os.getenv("GOOGLE_CREDENTIALS")
-    credentials = json.loads(raw_creds)
+    credentials = json.loads(GOOGLE_CREDENTIALS)
 
     gc = gspread.service_account_from_dict(credentials)
     return gc.open(SHEET_NAME).sheet1
