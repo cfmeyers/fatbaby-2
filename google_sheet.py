@@ -5,7 +5,6 @@ from typing import NamedTuple, Optional
 
 import gspread
 
-# SHEET_NAME = "Arthur's App (Responses)"
 SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
 
 
@@ -39,27 +38,11 @@ class BabyUpdate(NamedTuple):
 
 
 def get_sheet():
-    scope = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-        "google-credentials.json", scope  # type: ignore
-    )
-    client = gspread.authorize(creds)
-    return client.open(SHEET_NAME).sheet1
-
-
-def get_sheet():
-    scope = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
     raw_creds = os.getenv("GOOGLE_CREDENTIALS")
     credentials = json.loads(raw_creds)
 
     gc = gspread.service_account_from_dict(credentials)
-    return gc.open("Arthur's App (Responses)").sheet1
+    return gc.open(SHEET_NAME).sheet1
 
 
 def parse_val_into_event(val: list[str]) -> BabyEvent:

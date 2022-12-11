@@ -5,6 +5,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <title>FATBABY-2</title>
 
-    <div class="next-feeding"><p>Next feeding: <div class="make-bold">{{baby_update.pretty_next_feed}}</div></p></div>
+    <div class="next-feeding"><p class="make-bold">Next feeding: {{baby_update.pretty_next_feed}}</p></div>
     <div class="last-feeding"><p>Last feeding: {{baby_update.pretty_most_recent_feed}}</p></div>
     <div class="last-dirty-diaper"><p>Last dirty diaper: {{baby_update.pretty_most_recent_dirty_diaper}}</p></div>
