@@ -9,6 +9,8 @@ SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
 
 
 class BabyEvent(NamedTuple):
+    """One record parsed from baby-tracking Google Sheet"""
+
     created_at: datetime
     diaper_type: str
     formula_amount: Optional[float]
@@ -20,6 +22,8 @@ def to_pretty_time(dt: datetime) -> str:
 
 
 class BabyUpdate(NamedTuple):
+    """Holds the state of the app"""
+
     most_recent_feed: datetime
     next_feed: datetime
     most_recent_dirty_diaper: datetime
@@ -37,7 +41,8 @@ class BabyUpdate(NamedTuple):
         return to_pretty_time(self.most_recent_dirty_diaper)
 
 
-def get_sheet():
+def get_sheet() -> gspread.worksheet.Worksheet:
+    """Get the Google Sheet that holds the raw baby event data"""
     raw_creds = os.getenv("GOOGLE_CREDENTIALS")
     credentials = json.loads(raw_creds)
 
@@ -45,23 +50,25 @@ def get_sheet():
     return gc.open(SHEET_NAME).sheet1
 
 
-def parse_val_into_event(val: list[str]) -> BabyEvent:
-    created_at = datetime.strptime(val[0], "%m/%d/%Y %H:%M:%S")
+def parse_baby_event_from_record(record: list[str]) -> BabyEvent:
+    """Turn a record (row) from the Google Sheet into a BabyEvent"""
+    created_at = datetime.strptime(record[0], "%m/%d/%Y %H:%M:%S")
     try:
-        formula_amount = float(val[2])
+        formula_amount = float(record[2])
     except:
         formula_amount = None
     return BabyEvent(
         created_at=created_at,
-        diaper_type=val[1],
+        diaper_type=record[1],
         formula_amount=formula_amount,
-        people=val[3].split(", "),
+        people=record[3].split(", "),
     )
 
 
-def get_baby_events_from_sheet(sheet) -> list[BabyEvent]:
+def get_baby_events_from_sheet(sheet: gspread.worksheet.Worksheet) -> list[BabyEvent]:
+    """Convert all records in sheet (apart from header row) to BabyEvents"""
     vals = sheet.get_all_values()
-    return [parse_val_into_event(v) for v in vals[1:]]
+    return [parse_baby_event_from_record(v) for v in vals[1:]]
 
 
 def get_most_recent_feeding_time_from_events(events: list[BabyEvent]) -> datetime:
@@ -81,13 +88,8 @@ def get_next_feeding_time_from_events(
     return last_feeding_time + timedelta(hours=delta)
 
 
-def get_next_feeding_time() -> datetime:
-    sheet = get_sheet()
-    baby_events = get_baby_events_from_sheet(sheet)
-    return get_next_feeding_time_from_events(baby_events, delta=3.0)
-
-
 def get_baby_update() -> BabyUpdate:
+    """Get most recent state of baby feeding/diapers from Google Sheet"""
     sheet = get_sheet()
     events = get_baby_events_from_sheet(sheet)
     most_recent_feed = get_most_recent_feeding_time_from_events(events)

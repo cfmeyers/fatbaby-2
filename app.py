@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 
-from google_sheet import SHEET_NAME, get_baby_update
+from google_sheet import get_baby_update
 
 app = Flask(__name__)
 
