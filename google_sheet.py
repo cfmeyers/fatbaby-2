@@ -60,7 +60,16 @@ def get_sheet() -> gspread.worksheet.Worksheet:
 
 
 def parse_baby_event_from_record(record: list[str]) -> BabyEvent:
-    """Turn a record (row) from the Google Sheet into a BabyEvent"""
+    """Turn a record (row) from the Google Sheet into a BabyEvent
+
+    A record is a list of string, each representing a cell.
+    The cells are:
+        - Timestamp: in the form of e.g. "10/15/2022 14:31:02"
+        - Diaper: "Poop" or "Pee"
+        - Formula amount in mL: number
+        - Person: who fed/changed baby (single person or comma-sep list of people)
+
+    """
     created_at = datetime.strptime(record[0], "%m/%d/%Y %H:%M:%S")
     try:
         formula_amount = float(record[2])
